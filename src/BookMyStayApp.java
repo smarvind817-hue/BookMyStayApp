@@ -1,75 +1,80 @@
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Version: 2.0
- * Description: Introduction to Object Modeling through Inheritance and Abstraction.
- * This version focuses on domain design using abstract classes and concrete specializations.
+ * Version: 3.0
+ * Description: Centralized Room Inventory Management.
+ * This version replaces independent variables with a HashMap to manage state efficiently.
  */
 
-// Abstract Class: Represents the generalized concept of a Room
+// Domain Model (from previous use case)
 abstract class Room {
     private String type;
-    private int beds;
-    private double price;
-
-    public Room(String type, int beds, double price) {
-        this.type = type;
-        this.beds = beds;
-        this.price = price;
-    }
-
-    // Encapsulation: Accessing properties through defined behavior
-    public void displayInfo() {
-        System.out.println("Room Type: " + type + " | Beds: " + beds + " | Rate: $" + price);
-    }
+    public Room(String type) { this.type = type; }
+    public String getType() { return type; }
 }
 
-// Inheritance: Concrete classes extending the abstract Room
-class SingleRoom extends Room {
-    public SingleRoom() {
-        super("Single Room", 1, 100.0);
-    }
-}
+class SingleRoom extends Room { public SingleRoom() { super("Single"); } }
+class DoubleRoom extends Room { public DoubleRoom() { super("Double"); } }
+class SuiteRoom extends Room { public SuiteRoom() { super("Suite"); } }
 
-class DoubleRoom extends Room {
-    public DoubleRoom() {
-        super("Double Room", 2, 180.0);
-    }
-}
+// New Component: Centralized Inventory Manager
+class RoomInventory {
+    // HashMap provides O(1) average lookup and update time
+    private Map<String, Integer> inventory;
 
-class SuiteRoom extends Room {
-    public SuiteRoom() {
-        super("Executive Suite", 3, 350.0);
+    public RoomInventory() {
+        this.inventory = new HashMap<>();
+    }
+
+    // Register room types and their initial counts
+    public void initializeInventory(String type, int count) {
+        inventory.put(type, count);
+    }
+
+    // Controlled access to availability
+    public int getAvailability(String type) {
+        return inventory.getOrDefault(type, 0);
+    }
+
+    // Method to simulate updates (e.g., after a booking)
+    public void updateAvailability(String type, int newCount) {
+        if (inventory.containsKey(type)) {
+            inventory.put(type, newCount);
+        }
+    }
+
+    public void displayCurrentInventory() {
+        System.out.println("\n--- Current Inventory Status ---");
+        for (Map.Entry<String, Integer> entry : inventory.entrySet()) {
+            System.out.println("Room Type: " + entry.getKey() + " | Available: " + entry.getValue());
+        }
     }
 }
 
 public class BookMyStayApp {
     public static void main(String[] args) {
-        System.out.println("--- Hotel System Version 2.0: Room Initialization ---");
+        System.out.println("Initializing Hotel Booking System V3.0...");
 
-        // Polymorphism: Referencing concrete objects using the abstract Room type
-        Room single = new SingleRoom();
-        Room doubled = new DoubleRoom();
-        Room suite = new SuiteRoom();
+        // 1. Setup Inventory
+        RoomInventory hotelInventory = new RoomInventory();
 
-        // Static Availability Representation:
-        // Using simple variables to highlight limitations for future inventory lessons
-        int singleAvailability = 5;
-        int doubleAvailability = 3;
-        int suiteAvailability = 1;
+        // 2. Register Room Types (The "Put" operation)
+        hotelInventory.initializeInventory("Single", 10);
+        hotelInventory.initializeInventory("Double", 7);
+        hotelInventory.initializeInventory("Suite", 2);
 
-        // Displaying Room Details and State
-        single.displayInfo();
-        System.out.println("Current Availability: " + singleAvailability);
-        System.out.println("-------------------------------------------");
+        // 3. Display Initial State
+        hotelInventory.displayCurrentInventory();
 
-        doubled.displayInfo();
-        System.out.println("Current Availability: " + doubleAvailability);
-        System.out.println("-------------------------------------------");
+        // 4. Demonstrate a controlled update (Simulating a booking)
+        System.out.println("\nAction: Booking one Single Room...");
+        int currentSingle = hotelInventory.getAvailability("Single");
+        hotelInventory.updateAvailability("Single", currentSingle - 1);
 
-        suite.displayInfo();
-        System.out.println("Current Availability: " + suiteAvailability);
-        System.out.println("-------------------------------------------");
+        // 5. Final State Check
+        hotelInventory.displayCurrentInventory();
 
-        System.out.println("Application Execution Completed.");
+        System.out.println("\nInventory state remains consistent and centralized.");
     }
 }
